@@ -17,6 +17,14 @@ export function createUser(sequelize, DataTypes) {
         avatar: {
             type: DataTypes.STRING(1000),
             allowNull: false
+        },
+        video_liked: {
+            type: DataTypes.TEXT(60000),
+            allowNull: true 
+        },
+        comment_liked: {
+            type: DataTypes.TEXT(60000),
+            allowNull: true
         }
     })
 }

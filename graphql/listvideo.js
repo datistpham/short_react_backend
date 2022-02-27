@@ -1,6 +1,7 @@
 import { gql } from "apollo-server-express"
 import db from "../database.js"
 import Sequelize from "sequelize"
+import connection from "../setup_database/mysql/index.js"
 
 const typeDefs= gql`
     type Query {
@@ -29,7 +30,9 @@ const typeDefs= gql`
     type User {
         id_token: String!
         username: String!
-        avatar: String
+        avatar: String,
+        video_liked: String,
+        comment_liked: String
     }
     type Mutation {
         createUser (
@@ -45,6 +48,10 @@ const typeDefs= gql`
             number_of_dislike: Int!,
             id_video: String!
         ): Video
+        like_comment (
+            id_token: String!,
+            comment_liked: String
+        ): User
     }   
 `
 
@@ -55,7 +62,7 @@ const resolvers= {
             return await db.short.findOne({ where: { id_video: args.id_video } })
         },
         user: async (obj, args, context, info)=> {
-            return await db.short.findOne({ where: { id_token: args.id_token } })
+            return await db.user.findOne({ where: { id_token: args.id_token } })
         },
         video5: async(obj, args, context, info)=> {
             return await db.short.findAll({ order: Sequelize.literal('rand()'), limit: 5 })
@@ -75,21 +82,32 @@ const resolvers= {
             return user.save()
         },
         increment_like: async (root, args, context, info)=> {
-            console.log(args)
+            // console.log(args)
             await db.short.update(
-                { number_of_like: args.number_of_like, updatedAt: '1234',  },
+                { number_of_like: args.number_of_like },
                 { where: { id_video: args.id_video}}
             )
-            .then(()=> console.log(1))
+            .then(()=> console.log())
             .catch((err)=> console.log(err))
         },
         decrement_like: async (root, args, context, info)=> {
             await db.short.update(
-                {number_of_dislike: args.number_of_dislike, updatedAt: '1234'},
+                {number_of_dislike: args.number_of_dislike },
                 {where: { id_video: args.id_video }}
             )
             .then(()=> console.log())
             .catch((err)=> console.log(err))
+        },
+        like_comment: async (root, args, context, info)=> {
+            // console.log(args)
+            const comment_like_list= ""
+            const [rows]= await connection.execute(`select * from user where id_token='${args.id_token}'`)
+            let updated_comment_like= rows[0].comment_liked || comment_like_list
+            updated_comment_like= updated_comment_like+` ${args.comment_liked}`
+            updated_comment_like= updated_comment_like.trim()
+            await connection.execute(`update user set comment_liked='${updated_comment_like}' where id_token='${args.id_token}' `)
+            .then(()=> console.log())
+            .catch(err=> console.log(err))
         }
     }
 }
