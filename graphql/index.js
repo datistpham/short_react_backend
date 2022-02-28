@@ -26,13 +26,15 @@ const typeDefs= gql`
         number_of_view: Int!,
         imagesnapshot: String, 
 
+
     }
     type User {
         id_token: String!
         username: String!
         avatar: String,
         video_liked: String,
-        comment_liked: String
+        comment_liked: String,
+        id_comment: Video 
     }
     type Mutation {
         createUser (
@@ -49,6 +51,10 @@ const typeDefs= gql`
             id_video: String!
         ): Video
         like_comment (
+            id_token: String!,
+            comment_liked: String,
+        ): User
+        undolike_comment (
             id_token: String!,
             comment_liked: String
         ): User
@@ -103,7 +109,17 @@ const resolvers= {
             const comment_like_list= ""
             const [rows]= await connection.execute(`select * from user where id_token='${args.id_token}'`)
             let updated_comment_like= rows[0].comment_liked || comment_like_list
-            updated_comment_like= updated_comment_like+` ${args.comment_liked}`
+            updated_comment_like= updated_comment_like+`,${args.comment_liked},`
+            updated_comment_like= updated_comment_like.trim()
+            await connection.execute(`update user set comment_liked='${updated_comment_like}' where id_token='${args.id_token}' `)
+            .then(()=> console.log())
+            .catch(err=> console.log(err))
+        },
+        undolike_comment: async (root, args, context, info)=> {
+            const comment_like_list= ""
+            const [rows]= await connection.execute(`select * from user where id_token='${args.id_token}'`)
+            let updated_comment_like= rows[0].comment_liked || comment_like_list
+            updated_comment_like= updated_comment_like.replace(args.comment_liked, "")
             updated_comment_like= updated_comment_like.trim()
             await connection.execute(`update user set comment_liked='${updated_comment_like}' where id_token='${args.id_token}' `)
             .then(()=> console.log())

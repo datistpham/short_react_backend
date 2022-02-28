@@ -1,6 +1,6 @@
 import express from "express"
 import { ApolloServer} from "apollo-server-express"
-import { typeDefs, resolvers } from "./graphql/listvideo.js"
+import { typeDefs, resolvers } from "./graphql/index.js"
 import cors from "cors"
 import { route } from "./route/load_comment.js"
 

@@ -1,12 +1,14 @@
 import express from 'express'
-import connection from '../setup_database/mysql/index.js'
+import { count_comment } from '../controller/count_comment.js'
+import { like_comment } from '../controller/like_comment.js'
+import { load_comment } from '../controller/load_comment.js'
+import { loadmorecomment } from '../controller/load_more_comment.js'
 
 const route = express.Router()
 
-route.get("/comment", async(req, res) => {
-    const id_comment = req.query.id_comment
-    const [rows] = await connection.execute(`select * from ${id_comment} order by like_ desc limit 5`)
-    res.send(rows)
-})
+route.get("/comment", load_comment)
+route.get("/like_comment", like_comment)
+route.get("/comment/l/", loadmorecomment)
+route.get("/count/feed_back/comment", count_comment)
 
 export { route }
